@@ -1,0 +1,175 @@
+<Page
+    x:Class="OctoglowSender.Devices.Macro.MacroDevicePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OctoglowSender">
+
+    <Page.Resources>
+        <!-- Match the active macro tab to the key preview and settings cards. -->
+        <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="CardBackgroundFillColorDefaultBrush" />
+        <Style x:Key="MacroKeyStyle" TargetType="Border">
+            <Setter Property="Width" Value="88" />
+            <Setter Property="Height" Value="88" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style x:Key="MacroKeyLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </Page.Resources>
+
+    <Grid x:Name="MacroLayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="MacroHeaderRow" Height="Auto" />
+            <RowDefinition x:Name="MacroPreviewRow" Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="32,24,32,0" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="PageTitle" Style="{ThemeResource TitleTextBlockStyle}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                <Button x:Name="StatusPill" CornerRadius="14" Padding="12,6"
+                        Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderThickness="0"
+                        MinWidth="0" MinHeight="0" VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon x:Name="StatusIcon" FontSize="15" />
+                        <TextBlock x:Name="StatusText" VerticalAlignment="Center" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="MacroInfoButton" Click="MacroInfoButton_Click"
+                        Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderThickness="0"
+                        CornerRadius="14" Padding="9,0" MinWidth="34" VerticalAlignment="Stretch"
+                        AutomationProperties.Name="Macro information">
+                    <FontIcon Glyph="&#xE946;" FontSize="15" />
+                </Button>
+                </StackPanel>
+            </Grid>
+
+            <Viewbox x:Name="MacroPreview" Grid.Row="1" Stretch="Uniform" StretchDirection="Both"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     MaxWidth="620" Margin="32,28,32,32">
+                <Border x:Name="MacropadCase" CornerRadius="26" Padding="30,26"
+                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" BorderThickness="1.5"
+                        Translation="0,0,24">
+                    <Border.Shadow><ThemeShadow /></Border.Shadow>
+                    <StackPanel Spacing="20">
+                        <Grid x:Name="LedPreview" Width="56" Height="12" HorizontalAlignment="Center"
+                              Opacity="0.25" IsHitTestVisible="False" AutomationProperties.Name="Macro LED preview">
+                            <Rectangle x:Name="BacklightPreview" Width="56" Height="12" RadiusX="6" RadiusY="6"
+                                       Fill="{ThemeResource AccentFillColorDefaultBrush}" Opacity="0.28" />
+                            <Rectangle x:Name="AddressablePreview" Width="38" Height="5" RadiusX="3" RadiusY="3"
+                                       Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+                        </Grid>
+                        <Grid ColumnSpacing="14" RowSpacing="14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="KeyB1" Grid.Row="0" Grid.Column="0" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B1"><TextBlock Text="B1" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                            <Border x:Name="KeyB2" Grid.Row="0" Grid.Column="1" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B2"><TextBlock Text="B2" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                            <Border x:Name="KeyB3" Grid.Row="0" Grid.Column="2" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B3"><TextBlock Text="B3" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                            <Border x:Name="EncoderBorder" Grid.Row="0" Grid.Column="3" Width="88" Height="88" CornerRadius="44"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                    AutomationProperties.Name="K1 encoder">
+                                <Grid>
+                                    <Rectangle x:Name="EncoderNotch" Width="4" Height="11" RadiusX="2" RadiusY="2"
+                                               Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,11,0,0"
+                                               RenderTransformOrigin="0.5,3.5">
+                                        <Rectangle.RenderTransform><RotateTransform x:Name="EncoderNotchRotation" /></Rectangle.RenderTransform>
+                                    </Rectangle>
+                                    <TextBlock x:Name="EncoderLabel" Text="K1" Style="{StaticResource MacroKeyLabelStyle}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <Border x:Name="KeyB4" Grid.Row="1" Grid.Column="0" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B4"><TextBlock Text="B4" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                            <Border x:Name="KeyB5" Grid.Row="1" Grid.Column="1" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B5"><TextBlock Text="B5" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                            <Border x:Name="KeyB6" Grid.Row="1" Grid.Column="2" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B6"><TextBlock Text="B6" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                            <Border x:Name="KeyB7" Grid.Row="1" Grid.Column="3" Style="{StaticResource MacroKeyStyle}" AutomationProperties.Name="B7"><TextBlock Text="B7" Style="{StaticResource MacroKeyLabelStyle}" VerticalAlignment="Center" /></Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Viewbox>
+
+            <Grid Grid.Row="2" Background="{ThemeResource ClockSectionBandBrush}"
+                  BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                  BorderThickness="0,1,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                    <SelectorBar x:Name="MacroNavigation" Grid.Row="0" HorizontalAlignment="Center"
+                                 Margin="16,10,16,0"
+                                 SelectionChanged="MacroNavigation_SelectionChanged">
+                        <SelectorBar.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Default">
+                                        <StaticResource x:Key="SelectorBarItemForegroundSelected" ResourceKey="AccentTextFillColorPrimaryBrush" />
+                                        <StaticResource x:Key="SelectorBarItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                                        <StaticResource x:Key="SelectorBarItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+                                    </ResourceDictionary>
+                                    <ResourceDictionary x:Key="Light">
+                                        <StaticResource x:Key="SelectorBarItemForegroundSelected" ResourceKey="AccentTextFillColorPrimaryBrush" />
+                                        <StaticResource x:Key="SelectorBarItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                                        <StaticResource x:Key="SelectorBarItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </SelectorBar.Resources>
+                        <SelectorBarItem x:Name="ButtonsItem" Tag="buttons">
+                            <SelectorBarItem.Icon><FontIcon Glyph="&#xE765;" /></SelectorBarItem.Icon>
+                        </SelectorBarItem>
+                        <SelectorBarItem x:Name="LedItem" Tag="led">
+                            <SelectorBarItem.Icon><FontIcon Glyph="&#xE706;" /></SelectorBarItem.Icon>
+                        </SelectorBarItem>
+                        <SelectorBarItem x:Name="BuzzerItem" Tag="buzzer">
+                            <SelectorBarItem.Icon><FontIcon Glyph="&#xE767;" /></SelectorBarItem.Icon>
+                        </SelectorBarItem>
+                        <SelectorBarItem x:Name="IntegrationsItem" Tag="integrations">
+                            <SelectorBarItem.Icon><FontIcon Glyph="&#xEA86;" /></SelectorBarItem.Icon>
+                        </SelectorBarItem>
+                    </SelectorBar>
+                    <ScrollViewer x:Name="MacroContentScroll" Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  SizeChanged="MacroContentScroll_SizeChanged">
+                        <Grid x:Name="MacroContentViewport" HorizontalAlignment="Stretch">
+                            <Grid x:Name="MacroContentColumn" MaxWidth="976"
+                                  HorizontalAlignment="Center" VerticalAlignment="Top"
+                                  Padding="24,16,24,40" RowSpacing="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <InfoBar x:Name="MacroStatus" Grid.Row="0" IsOpen="False" IsClosable="True" />
+                                <StackPanel x:Name="ContentHost" Grid.Row="1"
+                                            HorizontalAlignment="Stretch" Spacing="6" />
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
+            </Grid>
+            <local:VerticalResizeHandle x:Name="MacroSectionSplitter" Grid.Row="2"
+                                        Height="10" Margin="0,-5,0,0" VerticalAlignment="Top"
+                                        Canvas.ZIndex="10"
+                                        PointerPressed="MacroSectionSplitter_PointerPressed"
+                                        PointerMoved="MacroSectionSplitter_PointerMoved"
+                                        PointerReleased="MacroSectionSplitter_PointerReleased"
+                                        PointerCaptureLost="MacroSectionSplitter_PointerCaptureLost" />
+    </Grid>
+</Page>

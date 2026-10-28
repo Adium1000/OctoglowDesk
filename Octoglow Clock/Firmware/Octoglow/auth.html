@@ -1,0 +1,1314 @@
+
+<!doctype html>
+<html lang=ro>
+<meta charset=UTF-8>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name=viewport>
+<meta name=theme-color id=theme-color content="#141218">
+<title>Octoglow Clock</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Ccircle cx='128' cy='128' r='128' fill='%23EADDFF' opacity='.137'/%3E%3Ccircle cx='128' cy='128' r='107.52' fill='%23EADDFF' opacity='.255'/%3E%3Ccircle cx='128' cy='128' r='92.16' fill='%23EADDFF' opacity='.392'/%3E%3Ccircle cx='128' cy='25.6' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='200.41' cy='55.59' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='230.4' cy='128' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='200.41' cy='200.41' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='128' cy='230.4' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='55.59' cy='200.41' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='25.6' cy='128' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='55.59' cy='55.59' r='11.52' fill='%236750A4'/%3E%3Ccircle cx='128' cy='128' r='71.68' fill='%236750A4'/%3E%3Ccircle cx='99.328' cy='99.328' r='23.04' fill='%23FFFFFF'/%3E%3C/svg%3E">
+<style>
+  /* The fonts are served by the clock itself (/fonts/, built by build_web.py from fonts/):
+     no request to Google Fonts or any other server. Weights 400-500 in one variable file;
+     a character the subset lacks comes from the system font. */
+  :root{--font-display:"Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;--font-body:Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif}
+  @font-face{font-family:"Google Sans";src:url(/fonts/google-sans.woff2) format("woff2");font-weight:400 500;font-display:swap}
+  @font-face{font-family:Roboto;src:url(/fonts/roboto.woff2) format("woff2");font-weight:400 500;font-display:swap}
+
+  /* The dashboard's colours, by the same names: the dark scheme here, the
+     light one below. applyTheme() writes the clock's accent and the user's own
+     surface colours over them. */
+  :root {
+    color-scheme: dark;
+    --pri: #d0bcff;
+    --on-pri: #381e72;
+    --pri-con: #4f378b;
+    --on-pri-con: #eaddff;
+    --sec-con: #4a4458;
+    --on-sec-con: #e8def8;
+    --bg: #141218;
+    --on-surf: #e6e1e5;
+    --surf-var: #49454f;
+    --on-surf-var: #cac4d0;
+    --surf-high: #2b2930;
+    --outline: #938f99;
+    --err: #f2b8b5;
+    --err-con: #8c1d18;
+    --on-err-con: #f9dedc;
+    --shadow: 0 12px 40px rgba(0, 0, 0, .35)
+  }
+
+  /* The light scheme: a dark primary with white on it, and containers that
+     are tints of what they sit on (see body.light in the dashboard). */
+  :root.light {
+    color-scheme: light;
+    --pri: #6750a4;
+    --on-pri: #ffffff;
+    --pri-con: color-mix(in srgb, var(--pri) 18%, transparent);
+    --on-pri-con: #21005d;
+    --sec-con: color-mix(in srgb, var(--pri) 13%, transparent);
+    --on-sec-con: #1d192b;
+    --bg: #fef7ff;
+    --on-surf: #1d1b20;
+    --surf-var: color-mix(in srgb, var(--on-surf) 9%, transparent);
+    --on-surf-var: #49454f;
+    --surf-high: #e8e0ee;
+    --outline: #79747e;
+    --err: #ba1a1a;
+    --err-con: #ffdad6;
+    --on-err-con: #410002;
+    --shadow: 0 8px 28px rgba(0, 0, 0, .14)
+  }
+
+  /* Motion, as in the dashboard: springs turned into easing curves for what
+     moves, a plain curve for colour and opacity. */
+  :root {
+    --m3-ease: cubic-bezier(.2, 0, 0, 1);
+    --m3-out: cubic-bezier(.3, 0, .8, .15);
+    --m3-fast: cubic-bezier(.3, 1.4, .55, 1);
+    --m3-fast-d: 350ms;
+    --m3-dlg: cubic-bezier(.3, 1.25, .5, 1);
+    --m3-fx-d: 160ms
+  }
+
+  @supports (transition-timing-function: linear(0, 1)) {
+    :root {
+      --m3-fast: linear(0, .098, .314, .556, .77, .93, 1.031, 1.081, 1.095, 1.085, 1.065, 1.042, 1.022, 1.007, .997, .992, .991, .992, .994, .996, 1);
+      --m3-dlg: linear(0, .084, .268, .476, .665, .816, .923, .991, 1.029, 1.044, 1.045, 1.039, 1.03, 1.021, 1.012, 1.006, 1.002, 1, .998, .998, 1)
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent
+  }
+
+  [hidden] {
+    display: none !important
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%
+  }
+
+  /* The card is centred by its own auto margins, not by the body: when it is
+     taller than the screen (a small phone on its side, the keyboard up) it
+     starts at the top and the page scrolls, where a centred flex item would
+     have its top cut off out of reach. dvh so the browser's own bars count. */
+  body {
+    background: var(--bg);
+    color: var(--on-surf);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left))
+  }
+
+  .auth-loading,
+  .auth-card {
+    margin: auto
+  }
+
+  /* ---------------------------------------------------------- the card
+     The dashboard's dialog: a raised surface with 28px corners. On a phone
+     there is no card - the page itself is the surface, as wide as it goes.
+     On a wide screen the logo and the words stand on the left and the form
+     on the right. */
+  .auth-card {
+    background: var(--surf-high);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 420px;
+    padding: 20px 20px 24px;
+    animation: m3-card-in .4s var(--m3-dlg)
+  }
+
+  .auth-side,
+  .auth-main {
+    min-width: 0
+  }
+
+  @keyframes m3-card-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(.94)
+    }
+  }
+
+  @keyframes m3-pop {
+    from {
+      transform: scale(.6)
+    }
+  }
+
+  /* The Octoglow logo, exactly as on the dashboard's About page: pale rings
+     round dark dots in the dark theme; the accent throughout in the light
+     one, where pale rings would not show. */
+  .auth-logo {
+    display: block;
+    width: 72px;
+    height: 72px
+  }
+
+  .logo-ring {
+    fill: var(--on-pri-con)
+  }
+
+  .logo-dot {
+    fill: var(--pri-con)
+  }
+
+  .light .logo-ring,
+  .light .logo-dot {
+    fill: var(--pri)
+  }
+
+  .auth-head {
+    margin: 20px 2px 24px
+  }
+
+  .auth-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.18;
+    letter-spacing: -.2px;
+    color: var(--on-surf);
+    overflow-wrap: anywhere;
+    text-wrap: balance
+  }
+
+  /* The last word and the hand go to the next line together. */
+  .auth-title span {
+    white-space: nowrap
+  }
+
+  /* Which clock this is: "Device:" and its address on the network, under the title. */
+  .auth-sub {
+    color: var(--on-surf-var);
+    font-size: 14px;
+    line-height: 1.45;
+    margin-top: 8px;
+    overflow-wrap: anywhere
+  }
+
+  .wave-hand {
+    display: inline-block;
+    width: .95em;
+    height: .95em;
+    vertical-align: -.12em;
+    margin-left: 6px
+  }
+
+  /* ---------------------------------------------------------- text fields
+     Material's filled field, as in the dashboard's dialogs: the label above
+     the text, an indicator line that takes the accent with the focus and the
+     error colour with a mistake, and under it the line that says what is
+     wrong. */
+  .fg+.fg {
+    margin-top: 12px
+  }
+
+  .tf {
+    position: relative;
+    background: var(--surf-var);
+    border-bottom: 2px solid var(--outline);
+    border-radius: 4px 4px 0 0;
+    padding: 0 16px;
+    transition: border-color var(--m3-fx-d) var(--m3-ease)
+  }
+
+  .tf:focus-within {
+    border-bottom-color: var(--pri)
+  }
+
+  .tf label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: .4px;
+    font-weight: 500;
+    color: var(--on-surf-var);
+    padding-top: 8px;
+    transition: color var(--m3-fx-d) var(--m3-ease)
+  }
+
+  .tf:focus-within label {
+    color: var(--pri)
+  }
+
+  /* 16px: anything smaller and iOS zooms the page in on focus. */
+  .tf input {
+    display: block;
+    width: 100%;
+    background: 0 0;
+    border: none;
+    outline: none;
+    border-radius: 0;
+    color: var(--on-surf);
+    caret-color: var(--pri);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 24px;
+    padding: 4px 0 10px;
+    -webkit-appearance: none;
+    appearance: none
+  }
+
+  .tf input::placeholder {
+    color: var(--on-surf-var);
+    opacity: .7
+  }
+
+  /* What a password manager fills in keeps the field's own colours: the
+     browser's fill colour is held back by a transition that never ends. */
+  .tf input:-webkit-autofill,
+  .tf input:-webkit-autofill:hover,
+  .tf input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--on-surf);
+    caret-color: var(--pri);
+    transition: background-color 99999s ease-out 0s
+  }
+
+  .tf input::-ms-reveal,
+  .tf input::-ms-clear {
+    display: none
+  }
+
+  .tf.has-btn {
+    padding-right: 56px
+  }
+
+  /* The avatar, at the head of the name's field: a person until a name is
+     typed, then its initials - and with them a rounder square in the accent,
+     Material 3 Expressive's change of shape for a change of state. */
+  .tf.has-lead {
+    padding-left: 68px
+  }
+
+  .auth-avatar {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    border-radius: 50%;
+    background: var(--pri-con);
+    color: var(--pri);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 500;
+    transition: border-radius var(--m3-fast-d) var(--m3-fast), background-color var(--m3-fx-d) var(--m3-ease), color var(--m3-fx-d) var(--m3-ease)
+  }
+
+  .auth-avatar svg {
+    width: 24px;
+    height: 24px
+  }
+
+  .auth-avatar.named {
+    border-radius: 13px;
+    background: var(--pri);
+    color: var(--on-pri);
+    animation: m3-pop var(--m3-fast-d) var(--m3-fast)
+  }
+
+  .tf-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--on-surf-var);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-radius var(--m3-fast-d) var(--m3-fast), transform var(--m3-fast-d) var(--m3-fast), background-color var(--m3-fx-d) var(--m3-ease)
+  }
+
+  .tf-btn svg {
+    width: 22px;
+    height: 22px
+  }
+
+  @media (hover: hover) {
+    .tf-btn:hover {
+      background: color-mix(in srgb, var(--on-surf) 8%, transparent)
+    }
+  }
+
+  .tf-btn:active {
+    border-radius: 30%;
+    transform: scale(.9);
+    background: color-mix(in srgb, var(--on-surf) 12%, transparent)
+  }
+
+  .tf-help {
+    color: var(--on-surf-var);
+    font-size: 12px;
+    line-height: 16px;
+    padding: 4px 16px 0
+  }
+
+  .tf-help:empty {
+    display: none
+  }
+
+  .fg.err .tf {
+    border-bottom-color: var(--err)
+  }
+
+  .fg.err .tf label,
+  .fg.err .tf-help {
+    color: var(--err)
+  }
+
+  .fg.err .tf input {
+    caret-color: var(--err)
+  }
+
+  /* ---------------------------------------------------------- buttons
+     The dashboard's buttons: fully round at rest, squarer and pressed in
+     while held, with a state layer in their own ink. */
+  .mbtn {
+    cursor: pointer;
+    border: none;
+    border-radius: 28px;
+    width: 100%;
+    height: 56px;
+    padding: 0 24px;
+    margin-top: 20px;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .1px;
+    background: var(--pri);
+    color: var(--on-pri);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: border-radius var(--m3-fast-d) var(--m3-fast), transform var(--m3-fast-d) var(--m3-fast), box-shadow var(--m3-fx-d) var(--m3-ease), opacity var(--m3-fx-d) var(--m3-ease)
+  }
+
+  .mbtn-ton {
+    background: var(--pri-con);
+    color: var(--on-pri-con)
+  }
+
+  .mbtn:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--m3-fx-d) var(--m3-ease)
+  }
+
+  @media (hover: hover) {
+    .mbtn:hover:after {
+      opacity: .08
+    }
+
+    .mbtn:not(.mbtn-ton):hover {
+      box-shadow: 0 1px 3px #0004
+    }
+  }
+
+  .mbtn:active {
+    border-radius: 16px;
+    transform: scale(.97)
+  }
+
+  /* The arrow leans forward under the pointer. */
+  .mbtn svg {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    transition: transform var(--m3-fast-d) var(--m3-fast)
+  }
+
+  @media (hover: hover) {
+    .mbtn:hover svg {
+      transform: translateX(4px)
+    }
+  }
+
+  .mbtn:active:after {
+    opacity: .12
+  }
+
+  .mbtn:disabled {
+    opacity: .38;
+    pointer-events: none
+  }
+
+  /* Waiting for the clock's answer: the button keeps its colour and shows
+     the loading indicator in place of its words. */
+  .mbtn.busy {
+    opacity: 1;
+    pointer-events: none
+  }
+
+  .mbtn:focus-visible,
+  .tf-btn:focus-visible {
+    outline: 2px solid var(--pri);
+    outline-offset: 2px
+  }
+
+  /* ---------------------------------------------------------- loading
+     Material 3 Expressive's loading indicator, as in the dashboard: a wavy
+     ring of which a turning arc shows. Alone on the page while the clock is
+     asked whether this browser is already signed in, so a returning session
+     goes straight to the dashboard without the card flashing past. */
+  .btn-spin {
+    width: 22px;
+    height: 22px;
+    color: var(--on-pri);
+    display: inline-block;
+    animation: btn-spin-rot 1.4s linear infinite
+  }
+
+  .btn-spin svg {
+    display: block;
+    width: 100%;
+    height: 100%
+  }
+
+  .auth-loading .btn-spin {
+    width: 44px;
+    height: 44px;
+    color: var(--pri)
+  }
+
+  .btn-spin path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1 200;
+    animation: m3-arc 1.33s cubic-bezier(.4, 0, .2, 1) infinite
+  }
+
+  @keyframes m3-arc {
+    0% {
+      stroke-dasharray: 1 200;
+      stroke-dashoffset: 0
+    }
+
+    50% {
+      stroke-dasharray: 88 200;
+      stroke-dashoffset: -16
+    }
+
+    100% {
+      stroke-dasharray: 88 200;
+      stroke-dashoffset: -118
+    }
+  }
+
+  @keyframes btn-spin-rot {
+    to {
+      transform: rotate(360deg)
+    }
+  }
+
+  /* ---------------------------------------------------------- messages
+     Too many wrong passwords: said for as long as it lasts, not in a toast. */
+  .auth-locked {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--err-con);
+    color: var(--on-err-con);
+    font-size: 14px;
+    line-height: 1.45;
+    text-align: center
+  }
+
+  .toast-wrap {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+    padding: 0 16px;
+    z-index: 500;
+    pointer-events: none
+  }
+
+  /* A step lighter than the card: on a phone the card is the page, and the
+     toast needs a surface of its own to stand out from. */
+  .toast {
+    background: var(--surf-high);
+    background: color-mix(in srgb, var(--on-surf) 8%, var(--surf-high));
+    color: var(--on-surf);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 10px 20px 10px 14px;
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+    max-width: 100%;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(24px) scale(.9);
+    transition: opacity .16s var(--m3-out), transform .2s var(--m3-out);
+    display: flex;
+    align-items: center;
+    gap: 10px
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: opacity .2s var(--m3-ease), transform var(--m3-fast-d) var(--m3-fast)
+  }
+
+  .toast-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--err);
+    color: var(--err-con);
+    display: flex;
+    align-items: center;
+    justify-content: center
+  }
+
+  .toast-icon svg {
+    width: 14px;
+    height: 14px
+  }
+
+  /* ---------------------------------------------------------- screens
+     A phone: no card, the form as wide as the screen allows. */
+  @media (max-width: 480px) {
+    .auth-card {
+      background: none;
+      box-shadow: none;
+      border-radius: 0;
+      padding: 4px 4px 16px
+    }
+  }
+
+  @media (max-width: 340px) {
+    .auth-card {
+      padding: 0 0 12px
+    }
+
+    .auth-title {
+      font-size: 24px
+    }
+  }
+
+  /* With the keyboard up there is little height left: everything closes up,
+     so the button stays on the screen. */
+  @media (max-height: 520px) and (max-width: 559px) {
+    .auth-logo {
+      width: 48px;
+      height: 48px
+    }
+
+    .auth-head {
+      margin: 12px 2px 14px
+    }
+
+    .auth-title {
+      font-size: 22px
+    }
+
+    .auth-sub {
+      display: none
+    }
+
+    .mbtn {
+      height: 48px;
+      margin-top: 14px
+    }
+  }
+
+  /* A wide screen, or a phone on its side: the logo and the words on the
+     left, the form on the right. */
+  @media (min-width: 860px),
+  (min-width: 560px) and (max-height: 520px) {
+    .auth-card {
+      max-width: 920px;
+      padding: 36px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 44px;
+      align-items: center
+    }
+
+    .auth-logo {
+      width: 88px;
+      height: 88px
+    }
+
+    .auth-head {
+      margin: 26px 2px 0
+    }
+
+    .auth-title {
+      font-size: 34px
+    }
+
+    .mbtn {
+      margin-top: 24px
+    }
+  }
+
+  @media (min-width: 560px) and (max-height: 520px) {
+    .auth-card {
+      max-width: 780px;
+      padding: 18px 20px;
+      gap: 24px
+    }
+
+    .auth-logo {
+      width: 56px;
+      height: 56px
+    }
+
+    .auth-head {
+      margin: 14px 2px 0
+    }
+
+    .auth-title {
+      font-size: 21px
+    }
+
+    .mbtn {
+      height: 48px;
+      margin-top: 14px
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
+    .auth-card,
+    .auth-avatar.named {
+      animation: none
+    }
+
+    .mbtn,
+    .tf-btn,
+    .toast,
+    .toast.show {
+      transition: opacity var(--m3-fx-d) var(--m3-ease)
+    }
+  }
+</style>
+<script>
+  // Runs before the first paint: the theme, so the page appears in colour.
+  //
+  // Material 3 Expressive's loading indicator, as in the dashboard: a wavy
+  // ring (r = 18.8 + 1.6 sin 8t in a 48 box) of which the stylesheet shows a
+  // turning arc.
+  var SPIN_SVG = (function() {
+    for (var d = '', i = 0; i < 128; i++) {
+      var a = i * Math.PI / 64,
+        r = 18.8 + 1.6 * Math.sin(8 * a);
+      d += (i ? 'L' : 'M') + (24 + r * Math.cos(a)).toFixed(1) + ' ' + (24 + r * Math.sin(a)).toFixed(1)
+    }
+    return '<svg viewBox="0 0 48 48" aria-hidden="true"><path pathLength="119.4" d="' + d + 'Z"/></svg>'
+  })();
+
+  // The same arithmetic as the dashboard's hexToHsl() / hslToHex(), so the
+  // tones come out identical.
+  function hexHsl(hex) {
+    var r = parseInt(hex.substr(1, 2), 16) / 255,
+      g = parseInt(hex.substr(3, 2), 16) / 255,
+      b = parseInt(hex.substr(5, 2), 16) / 255;
+    var max = Math.max(r, g, b),
+      min = Math.min(r, g, b),
+      h = 0,
+      s = 0,
+      l = (max + min) / 2;
+    if (max !== min) {
+      var d = max - min;
+      s = l > .5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60
+    }
+    return [h, s * 100, l * 100]
+  }
+
+  function hslHex(h, s, l) {
+    h = ((h % 360) + 360) % 360;
+    s /= 100;
+    l /= 100;
+    var c = (1 - Math.abs(2 * l - 1)) * s,
+      x = c * (1 - Math.abs((h / 60) % 2 - 1)),
+      m = l - c / 2,
+      rgb = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    return '#' + rgb.map(function(v) {
+      var n = Math.max(0, Math.min(255, Math.round((v + m) * 255))).toString(16);
+      return n.length === 1 ? '0' + n : n
+    }).join('')
+  }
+
+  // The dashboard's lightPrimary(): the accent's hue taken down until it
+  // stands 6.2:1 from white, so a yellow or a green reads on a light surface.
+  function lightPrimary(h) {
+    var lin = function(v) {
+      v /= 255;
+      return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4)
+    };
+    for (var l = 48; l > 14; l--) {
+      var c = hslHex(h, 48, l),
+        n = parseInt(c.slice(1), 16);
+      if (1.05 / (.2126 * lin(n >> 16 & 255) + .7152 * lin(n >> 8 & 255) + .0722 * lin(n & 255) + .05) >= 6.2) return c
+    }
+    return hslHex(h, 48, 14)
+  }
+
+  // The clock's theme on the sign-in page, as the dashboard works it out:
+  // dark or light, the accent with the tones derived from it, and the user's
+  // own background and card colours for that mode ("bgD,cardD,bgL,cardL").
+  // The stock accent and empty colours leave the stylesheet's values in place.
+  var THEME_DARK = {
+      '--pri': [78, 85],
+      '--on-pri': [42, 22],
+      '--pri-con': [38, 35],
+      '--on-pri-con': [62, 92],
+      '--sec-con': [16, 31],
+      '--on-sec-con': [65, 92],
+      '--surf-var': [7, 29],
+      '--on-surf-var': [11, 79],
+      '--outline': [5, 58]
+    },
+    THEME_LIGHT = {
+      '--on-pri-con': [80, 16],
+      '--on-sec-con': [26, 13],
+      '--on-surf-var': [7, 29],
+      '--outline': [4, 47]
+    };
+
+  function applyTheme(accent, colors, dark) {
+    var el = document.documentElement,
+      root = el.style,
+      hex = /^#[0-9a-f]{6}$/,
+      k;
+    dark = dark !== false;
+    if (dark) el.classList.remove('light');
+    else el.classList.add('light');
+    accent = String(accent || '').toLowerCase();
+    var hue = hex.test(accent) && accent !== '#d0bcff' ? hexHsl(accent)[0] : null,
+      tones = dark ? THEME_DARK : THEME_LIGHT;
+    for (k in THEME_DARK) root.removeProperty(k);
+    if (hue !== null) {
+      for (k in tones) root.setProperty(k, hslHex(hue, tones[k][0], tones[k][1]));
+      if (!dark) {
+        root.setProperty('--pri', lightPrimary(hue));
+        root.setProperty('--on-pri', '#ffffff')
+      }
+    }
+    var c = String(colors || '').toLowerCase().split(','),
+      bg = c[dark ? 0 : 2] || '',
+      card = c[dark ? 1 : 3] || '';
+    if (hex.test(bg)) root.setProperty('--bg', bg);
+    else root.removeProperty('--bg');
+    if (hex.test(card)) {
+      // The card is a raised surface: the dashboard's "surface high", a few
+      // points lighter than the button colour in the dark, darker in the
+      // light (the other way when there is no room).
+      var q = hexHsl(card),
+        step = dark ? [6, 10] : [-4.5, -7],
+        far = q[2] + step[1],
+        dir = far > 98 || far < 2 ? -1 : 1;
+      root.setProperty('--surf-high', hslHex(q[0], q[1], Math.max(0, Math.min(100, q[2] + step[0] * dir))))
+    } else root.removeProperty('--surf-high');
+    // The phone browser's own bars take the page's colour.
+    var meta = document.getElementById('theme-color');
+    if (meta) meta.content = hex.test(bg) ? bg : dark ? '#141218' : '#fef7ff'
+  }
+
+  // What the dashboard last used in this browser (same origin, same keys);
+  // init() then takes the clock's own values from /authstate.
+  var themeDark = true;
+  try {
+    themeDark = localStorage.getItem('darkMode') !== '0';
+    applyTheme(localStorage.getItem('accentColor'), localStorage.getItem('uiColors'), themeDark)
+  } catch (e) {}
+</script>
+
+<body>
+  <div class=auth-loading id=auth-loading><span class=btn-spin id=auth-spin></span></div>
+  <main class=auth-card id=auth-card hidden>
+    <div class=auth-side>
+      <svg class=auth-logo viewBox="0 0 256 256" aria-hidden=true>
+        <circle cx=128 cy=128 r=128 class=logo-ring opacity=.137 />
+        <circle cx=128 cy=128 r=107.52 class=logo-ring opacity=.255 />
+        <circle cx=128 cy=128 r=92.16 class=logo-ring opacity=.392 />
+        <circle cx=128 cy=25.6 r=11.52 class=logo-dot />
+        <circle cx=200.41 cy=55.59 r=11.52 class=logo-dot />
+        <circle cx=230.4 cy=128 r=11.52 class=logo-dot />
+        <circle cx=200.41 cy=200.41 r=11.52 class=logo-dot />
+        <circle cx=128 cy=230.4 r=11.52 class=logo-dot />
+        <circle cx=55.59 cy=200.41 r=11.52 class=logo-dot />
+        <circle cx=25.6 cy=128 r=11.52 class=logo-dot />
+        <circle cx=55.59 cy=55.59 r=11.52 class=logo-dot />
+        <circle cx=128 cy=128 r=71.68 class=logo-dot />
+        <circle cx=99.328 cy=99.328 r=23.04 fill="#fff" />
+      </svg>
+      <div class=auth-head>
+        <h1 class=auth-title id=auth-title>Octoglow</h1>
+        <div class=auth-sub id=auth-sub hidden></div>
+      </div>
+    </div>
+    <div class=auth-main>
+      <form id=auth-form novalidate hidden>
+        <div class=fg id=fg-user>
+          <div class="tf has-lead"><span class=auth-avatar id=auth-avatar aria-hidden=true></span><label for=inp-user data-t="Utilizator">Utilizator</label><input id=inp-user name=username type=text autocomplete=username autocapitalize=none autocorrect=off spellcheck=false enterkeyhint=next maxlength=32 placeholder="ex: admin" data-ph="ex: admin"></div>
+          <div class=tf-help id=help-user role=alert></div>
+        </div>
+        <div class=fg id=fg-pass>
+          <div class="tf has-btn"><label for=inp-pass data-t="Parola">Parola</label><input id=inp-pass name=password type=password autocomplete=current-password autocapitalize=none autocorrect=off spellcheck=false enterkeyhint=go maxlength=64 placeholder="Introduceți parola" data-ph="Introduceți parola"><button type=button class=tf-btn id=pass-eye aria-label="Afișați parola" title="Afișați parola"></button></div>
+          <div class=tf-help id=help-pass role=alert></div>
+        </div>
+        <div class=auth-locked id=auth-locked role=alert data-t="Prea multe parole greșite. Logarea e blocată până la repornirea ceasului." hidden>Prea multe parole greșite. Logarea e blocată până la repornirea ceasului.</div>
+        <button class=mbtn id=auth-btn type=submit></button>
+      </form>
+      <button class="mbtn mbtn-ton" id=retry-btn type=button data-t="Reîncercați" hidden>Reîncercați</button>
+    </div>
+  </main>
+  <div class=toast-wrap><div class=toast id=toast-el role=status><span class=toast-icon><svg viewBox="0 0 24 24" fill=currentColor><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></span><span id=toast-txt></span></div></div>
+  <script>
+    function $(id) {
+      return document.getElementById(id)
+    }
+    $('auth-spin').innerHTML = SPIN_SVG;
+
+    var ICON = function(d) {
+      return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="' + d + '"/></svg>'
+    };
+    var AVATAR_ICON_SVG = ICON('M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'),
+      ARROW_SVG = ICON('M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z'),
+      EYE_SVG = ICON('M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'),
+      EYE_OFF_SVG = ICON('M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z'),
+      WAVE_SVG = ' <svg class="wave-hand" xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor" aria-hidden="true"><path d="M880-759q0-51-35-86t-86-35v-60q75 0 128 53t53 128h-60ZM240-40q-83 0-141.5-58.5T40-240h60q0 58 41 99t99 41v60Zm162 0q-30 0-56-13.5T303-92L48-465l24-23q19-19 45-22t47 12l116 81v-383q0-17 11.5-28.5T320-840q17 0 28.5 11.5T360-800v537L212-367l157 229q5 8 14 13t19 5h278q33 0 56.5-23.5T760-200v-560q0-17 11.5-28.5T800-800q17 0 28.5 11.5T840-760v560q0 66-47 113T680-40H402Zm38-440v-400q0-17 11.5-28.5T480-920q17 0 28.5 11.5T520-880v400h-80Zm160 0v-360q0-17 11.5-28.5T640-880q17 0 28.5 11.5T680-840v360h-80ZM486-300Z"/></svg>';
+
+    // Same storage key the dashboard writes in i18nSetLang(), and the same
+    // origin, so the login page follows whatever language was picked there -
+    // until /authstate says which one the clock itself is set to (showForm).
+    var AUTH_LANG = (function() {
+      try {
+        return localStorage.getItem('octoglowUiLang') === 'en' ? 'en' : 'ro'
+      } catch (e) {
+        return 'ro'
+      }
+    })();
+    var AUTH_TR = {
+      'Utilizator': 'Username',
+      'Parola': 'Password',
+      'ex: admin': 'e.g. admin',
+      'Introduceți parola': 'Enter the password',
+      'Afișați parola': 'Show the password',
+      'Ascundeți parola': 'Hide the password',
+      'Conectați-vă': 'Sign in',
+      'Creați contul': 'Create the account',
+      'Reîncercați': 'Try again',
+      'Bine ați venit, configurați un cont': 'Welcome, set up an account',
+      'Bine ați revenit pe Octoglow!': 'Welcome back to Octoglow!',
+      'Ceasul nu răspunde': 'The clock is not answering',
+      'Verificați că sunteți în aceeași rețea cu ceasul. Se reîncearcă automat.': 'Check that you are on the same network as the clock. Trying again by itself.',
+      'Introduceți un nume de utilizator.': 'Enter a username.',
+      'Parola trebuie să aibă cel puțin 4 caractere.': 'The password must be at least 4 characters.',
+      'Cel puțin 4 caractere': 'At least 4 characters',
+      'Utilizator sau parolă greșită.': 'Wrong username or password.',
+      'Eroare': 'Error',
+      'Eroare de conexiune. Încercați din nou.': 'Connection error. Please try again.',
+      'Ceasul nu a răspuns. Încercați din nou.': 'The clock did not answer. Please try again.',
+      // What the device itself answers with. It replies in Romanian, and these
+      // went into the toast untouched - the reason every failed sign-in stayed
+      // Romanian however the interface was set.
+      'Cont deja existent': 'An account already exists',
+      'Niciun cont configurat': 'No account has been set up',
+      'Lipsesc campuri': 'Missing fields',
+      'Date invalide': 'Invalid details',
+      'Prea multe parole greșite. Logarea e blocată până la repornirea ceasului.': 'Too many wrong passwords. Signing in is blocked until the clock restarts.'
+    };
+
+    function T(s) {
+      return (AUTH_LANG === 'en' && AUTH_TR[s]) ? AUTH_TR[s] : s
+    }
+
+    // Static markup: labels, placeholders and the words of the buttons, each
+    // marked with its Romanian text (data-t, data-ph).
+    function applyAuthLang() {
+      document.documentElement.lang = AUTH_LANG;
+      var i, list = document.querySelectorAll('[data-t]');
+      for (i = 0; i < list.length; i++) list[i].textContent = T(list[i].getAttribute('data-t'));
+      list = document.querySelectorAll('[data-ph]');
+      for (i = 0; i < list.length; i++) list[i].placeholder = T(list[i].getAttribute('data-ph'))
+    }
+    applyAuthLang();
+
+    var isSetup = false,
+      isLocked = false,
+      busy = false,
+      form = $('auth-form'),
+      inpUser = $('inp-user'),
+      inpPass = $('inp-pass'),
+      btn = $('auth-btn');
+
+    function roUpper(ch) {
+      var map = {
+        'ă': 'Ă',
+        'â': 'Â',
+        'î': 'Î',
+        'ș': 'Ș',
+        'ş': 'Ș',
+        'ț': 'Ț',
+        'ţ': 'Ț'
+      };
+      return map[ch] || ch.toUpperCase()
+    }
+
+    function getInitials(name) {
+      var parts = (name || '').trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '';
+      if (parts.length === 1) return roUpper(parts[0].charAt(0));
+      return roUpper(parts[0].charAt(0)) + roUpper(parts[1].charAt(0))
+    }
+
+    // The avatar: the initials of the name being typed, a person until then.
+    function updateAvatarInitials() {
+      var el = $('auth-avatar'),
+        initials = getInitials(inpUser.value);
+      if (initials) {
+        if (el.textContent !== initials) el.textContent = initials;
+        el.classList.add('named')
+      } else {
+        el.innerHTML = AVATAR_ICON_SVG;
+        el.classList.remove('named')
+      }
+    }
+
+    // The line under a field: what is wrong with it (in the error colour, the
+    // field's indicator with it), or a hint, or nothing.
+    function fieldMsg(which, msg, isErr) {
+      var fg = $('fg-' + which);
+      $('help-' + which).textContent = msg || '';
+      if (isErr) fg.classList.add('err');
+      else fg.classList.remove('err');
+      $('inp-' + which).setAttribute('aria-invalid', isErr ? 'true' : 'false')
+    }
+
+    function passHint() {
+      fieldMsg('pass', isSetup ? T('Cel puțin 4 caractere') : '', false)
+    }
+
+    var toastTimer = null;
+
+    function showErr(msg) {
+      var el = $('toast-el');
+      if (toastTimer) clearTimeout(toastTimer);
+      $('toast-txt').textContent = msg;
+      el.classList.add('show');
+      toastTimer = setTimeout(function() {
+        el.classList.remove('show')
+      }, 3200)
+    }
+
+    function setBtnLabel() {
+      btn.textContent = T(isSetup ? 'Creați contul' : 'Conectați-vă');
+      btn.insertAdjacentHTML('beforeend', ARROW_SVG)
+    }
+
+    // Asking the clock: while the answer is on its way the button turns into
+    // the loading indicator and the fields cannot be changed (read-only, not
+    // disabled: a disabled field loses the focus and hides the keyboard).
+    function setBusy(on) {
+      busy = on;
+      btn.disabled = on || isLocked;
+      inpUser.readOnly = inpPass.readOnly = on;
+      if (on) {
+        btn.classList.add('busy');
+        btn.innerHTML = '<span class="btn-spin">' + SPIN_SVG + '</span>'
+      } else {
+        btn.classList.remove('busy');
+        setBtnLabel()
+      }
+    }
+
+    // A request that gives up. The clock answers in well under a second; a
+    // browser left alone waits a minute or more for one that has gone, with
+    // the page stuck on its loading indicator. Resolves with the status and
+    // the body as text, so nothing later can hang on a half-sent answer.
+    function ask(url, body) {
+      var ctl = window.AbortController ? new AbortController() : null,
+        timer = null,
+        opts = {
+          method: body === undefined ? 'GET' : 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store'
+        };
+      if (body !== undefined) {
+        opts.headers = {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        };
+        opts.body = body
+      }
+      if (ctl) {
+        opts.signal = ctl.signal;
+        timer = setTimeout(function() {
+          ctl.abort()
+        }, 10000)
+      }
+      return fetch(url, opts).then(function(r) {
+        return r.text().then(function(text) {
+          clearTimeout(timer);
+          return {
+            ok: r.ok,
+            status: r.status,
+            text: text
+          }
+        })
+      }).catch(function(e) {
+        clearTimeout(timer);
+        throw e
+      })
+    }
+
+    function showCard() {
+      $('auth-loading').hidden = true;
+      $('auth-card').hidden = false
+    }
+
+    // The clock did not answer: said on the card, with a button, and asked
+    // again every few seconds - a clock that is restarting comes back by itself.
+    var retryTimer = null;
+
+    function showDown() {
+      form.hidden = true;
+      $('auth-title').textContent = T('Ceasul nu răspunde');
+      $('auth-sub').textContent = T('Verificați că sunteți în aceeași rețea cu ceasul. Se reîncearcă automat.');
+      $('auth-sub').hidden = false;
+      $('retry-btn').hidden = false;
+      $('retry-btn').disabled = false;
+      showCard();
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(function() {
+        init(true)
+      }, 4000)
+    }
+
+    // The clock has closed its login until it restarts: nothing typed here can
+    // get in meanwhile, so the form says so and stays shut.
+    function showLocked() {
+      isLocked = true;
+      $('auth-locked').hidden = false;
+      inpUser.disabled = inpPass.disabled = btn.disabled = $('pass-eye').disabled = true
+    }
+
+    function showForm(d) {
+      // A firmware older than this page does not say; the browser's copy stays.
+      if (d.accent !== undefined) {
+        if (d.dark !== undefined) themeDark = d.dark !== false;
+        applyTheme(d.accent, d.colors, themeDark)
+      }
+      // The clock's own language, when it says: a browser that has never opened
+      // the dashboard has none stored. Kept, so the dashboard opens in it too.
+      if ((d.lang === 'en' || d.lang === 'ro') && d.lang !== AUTH_LANG) {
+        AUTH_LANG = d.lang;
+        try {
+          localStorage.setItem('octoglowUiLang', d.lang)
+        } catch (e) {}
+        applyAuthLang();
+        setPassShown(inpPass.type === 'text')
+      }
+      isSetup = !d.configured;
+      isLocked = false;
+      $('retry-btn').hidden = true;
+      $('auth-locked').hidden = true;
+      inpUser.disabled = inpPass.disabled = $('pass-eye').disabled = false;
+      if (isSetup) $('auth-title').textContent = T('Bine ați venit, configurați un cont');
+      else {
+        var words = T('Bine ați revenit pe Octoglow!').split(' '),
+          last = words.pop();
+        $('auth-title').innerHTML = words.join(' ') + ' <span>' + last + WAVE_SVG + '</span>'
+      }
+      // Which clock this is, for whoever has more than one.
+      $('auth-sub').textContent = d.host ? 'Device: ' + d.host + '.local' : '';
+      $('auth-sub').hidden = !d.host;
+      // A new password is offered by the browser's password manager, the
+      // current one is filled in.
+      inpPass.autocomplete = isSetup ? 'new-password' : 'current-password';
+      fieldMsg('user', '', false);
+      passHint();
+      setBusy(false);
+      updateAvatarInitials();
+      form.hidden = false;
+      showCard();
+      if (d.locked) {
+        showLocked();
+        return
+      }
+      // With a mouse the cursor can wait in the first field; on a phone that
+      // would raise the keyboard over half the page before anything is read.
+      if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches && document.activeElement !== inpPass) inpUser.focus()
+    }
+
+    // Is this browser signed in already? Then straight to the dashboard.
+    // Otherwise the form, for signing in or for the first account. The two
+    // questions are asked together; only the newest round of answers counts.
+    var initSeq = 0;
+
+    function init(quiet) {
+      var seq = ++initSeq;
+      clearTimeout(retryTimer);
+      if (!quiet) $('retry-btn').disabled = true;
+      Promise.all([ask('/whoami'), ask('/authstate')]).then(function(a) {
+        if (seq !== initSeq) return;
+        if (a[0].ok) {
+          location.replace('/dashboard');
+          return
+        }
+        var d = JSON.parse(a[1].text);
+        if (!a[1].ok || !d || typeof d.configured !== 'boolean') throw new Error('authstate');
+        showForm(d)
+      }).catch(function() {
+        if (seq === initSeq) showDown()
+      })
+    }
+
+    function doAuth() {
+      if (busy || isLocked) return;
+      var u = inpUser.value.trim(),
+        p = inpPass.value;
+      fieldMsg('user', '', false);
+      passHint();
+      if (u.length < 1) {
+        fieldMsg('user', T('Introduceți un nume de utilizator.'), true);
+        inpUser.focus();
+        return
+      }
+      if (p.length < 4) {
+        fieldMsg('pass', T('Parola trebuie să aibă cel puțin 4 caractere.'), true);
+        inpPass.focus();
+        return
+      }
+      setBusy(true);
+      ask(isSetup ? '/authsetup' : '/login', 'user=' + encodeURIComponent(u) + '&pass=' + encodeURIComponent(p)).then(function(r) {
+        // /login answers in JSON, /authsetup reports a refusal as plain text.
+        var d;
+        try {
+          d = JSON.parse(r.text)
+        } catch (e) {
+          d = null
+        }
+        if (!d || typeof d !== 'object') d = {
+          ok: false,
+          err: r.text.trim()
+        };
+        if (d.ok && r.ok) {
+          // The dashboard greets by name from this copy before it has asked.
+          try {
+            localStorage.setItem('greetUser', d.user || u)
+          } catch (e) {}
+          // replace(): Back from the dashboard does not land on this page again.
+          location.replace('/dashboard');
+          return
+        }
+        setBusy(false);
+        if (d.locked) {
+          showLocked();
+          return
+        }
+        if (r.status === 401) {
+          // Wrong name or password: said at the field, which is cleared and
+          // waiting for another go.
+          inpPass.value = '';
+          fieldMsg('pass', T('Utilizator sau parolă greșită.'), true);
+          inpPass.focus();
+          return
+        }
+        showErr(d.err ? T(d.err) : r.status >= 500 ? T('Ceasul nu a răspuns. Încercați din nou.') : T('Eroare'));
+        // "An account already exists", "no account yet": the clock is no longer
+        // in the state this form was drawn for, so it is asked again.
+        if (r.status === 403) init(true)
+      }).catch(function(e) {
+        setBusy(false);
+        showErr(T(e && e.name === 'AbortError' ? 'Ceasul nu a răspuns. Încercați din nou.' : 'Eroare de conexiune. Încercați din nou.'))
+      })
+    }
+
+    // A real form: Enter and the phone keyboard's "go" key send it, and the
+    // browser's password manager knows what it is looking at.
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      doAuth()
+    });
+    inpUser.addEventListener('input', function() {
+      updateAvatarInitials();
+      if ($('fg-user').classList.contains('err')) fieldMsg('user', '', false)
+    });
+    inpPass.addEventListener('input', function() {
+      if ($('fg-pass').classList.contains('err')) passHint()
+    });
+    // Enter in the first field goes on to the password while that is empty.
+    inpUser.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !inpPass.value) {
+        e.preventDefault();
+        inpPass.focus()
+      }
+    });
+    $('retry-btn').addEventListener('click', function() {
+      init()
+    });
+
+    // The eye: the password as typed, for checking it - there is no second
+    // field to type it into again.
+    function setPassShown(shown) {
+      var eye = $('pass-eye'),
+        label = T(shown ? 'Ascundeți parola' : 'Afișați parola');
+      inpPass.type = shown ? 'text' : 'password';
+      eye.innerHTML = shown ? EYE_OFF_SVG : EYE_SVG;
+      eye.title = label;
+      eye.setAttribute('aria-label', label);
+      eye.setAttribute('aria-pressed', shown ? 'true' : 'false')
+    }
+    $('pass-eye').addEventListener('click', function() {
+      setPassShown(inpPass.type === 'password');
+      inpPass.focus()
+    });
+    setPassShown(false);
+    updateAvatarInitials();
+    setBtnLabel();
+
+    // Back to this page from the browser's history brings it as it was left -
+    // the button still turning. It starts over, signed in or not.
+    window.addEventListener('pageshow', function(e) {
+      if (!e.persisted) return;
+      setPassShown(false);
+      inpPass.value = '';
+      setBusy(false);
+      init(true)
+    });
+    init()
+  </script>

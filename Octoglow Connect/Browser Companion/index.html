@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#191c24">
+  <title>Octoglow Connect · Macro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand"><span class="brand-mark">✦</span><span>Octoglow <strong>Connect</strong><small>Browser companion</small></span></div>
+      <div class="sidebar-label" data-i18n="devices">Dispozitive</div>
+      <button class="side-item selected" type="button"><span class="side-icon">▦</span><span>Octoglow Macro<small data-i18n="wiredDevice">Dispozitiv USB</small></span></button>
+      <div class="sidebar-bottom"><span class="local-pill"><span class="dot"></span><span data-i18n="localOnly">Rulează local în browser</span></span><label class="language"><span data-i18n="language">Limbă</span><select id="language" aria-label="Language"><option value="ro">Română</option><option value="en">English</option></select></label></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div><span class="eyebrow">OCTOGLOW / MACRO</span><h1>Octoglow Macro</h1><p data-i18n="subtitle">Configurează dispozitivul direct din browser.</p></div><div class="header-actions"><span id="connection-pill" class="status-pill"><span class="status-dot"></span><span data-i18n="disconnected">Deconectat</span></span><button id="connect-button" class="button primary" type="button" data-i18n="chooseDevice">Alege dispozitivul</button><button id="disconnect-button" class="button subtle hidden" type="button" data-i18n="disconnect">Deconectează</button></div></header>
+      <div id="notice" class="notice hidden" role="status"><span id="notice-icon">ⓘ</span><span id="notice-text"></span><button id="notice-close" type="button" aria-label="Close">×</button></div>
+      <section class="hero"><div class="hero-copy"><span class="section-overline" data-i18n="devicePreview">PREVIZUALIZARE DISPOZITIV</span><h2 id="hero-title" data-i18n="readyTitle">Macro, gata de configurat.</h2><p id="hero-description" data-i18n="readyText">Conectează Macro prin USB, apoi alege portul din dialogul browserului. Aplicația desktop trebuie să fie închisă ca portul să fie liber.</p><div class="hero-chips"><span id="firmware-chip" class="chip">Firmware —</span><span id="tab-chip" class="chip" data-i18n="noTabs">Taburi —</span></div></div><div class="device-area"><div class="macropad"><span id="led-preview" class="led-preview"></span><div id="preview-keys" class="preview-keys"></div></div></div></section>
+      <div class="section-header"><div><span class="section-overline" data-i18n="configure">CONFIGURARE</span><h2 id="section-title" data-i18n="buttons">Butoane</h2></div><button id="refresh-button" class="button subtle" type="button" disabled><span aria-hidden="true">↻</span> <span data-i18n="refresh">Reîmprospătează</span></button></div>
+      <nav class="nav-tabs" aria-label="Macro settings"><button class="nav-tab active" type="button" data-page="buttons"><span>▦</span><span data-i18n="buttons">Butoane</span></button><button class="nav-tab" type="button" data-page="lighting"><span>☼</span><span data-i18n="lighting">Iluminare</span></button><button class="nav-tab" type="button" data-page="buzzer"><span>◖))</span><span>Buzzer</span></button><button class="nav-tab" type="button" data-page="about"><span>ⓘ</span><span data-i18n="about">Despre</span></button></nav>
+      <div id="page-content" class="page-content"></div>
+      <footer><span>Octoglow Connect · Browser companion</span><span data-i18n="browserFooter">Doar Octoglow Macro · USB serial</span></footer>
+    </main>
+  </div>
+  <dialog id="editor" class="editor"><form id="editor-form" method="dialog"><div class="editor-head"><span class="editor-icon">⌘</span><div><h2 id="editor-title"></h2><p data-i18n="savedToMacro">Modificările se salvează pe Macro.</p></div><button id="editor-x" class="icon-button" type="button" aria-label="Close">×</button></div><div id="editor-fields" class="editor-body"></div><div class="editor-actions"><button id="editor-cancel" class="button subtle" type="button" data-i18n="cancel">Anulează</button><button id="editor-save" class="button primary" type="submit" data-i18n="save">Salvează</button></div></form></dialog>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>

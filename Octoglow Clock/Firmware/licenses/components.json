@@ -1,0 +1,193 @@
+{
+  "names": {
+    "MIT": "MIT License",
+    "Apache-2.0": "Apache License 2.0",
+    "LGPL-2.1": "GNU Lesser General Public License v2.1",
+    "BSD-3-Clause": "BSD 3-Clause License",
+    "OFL-1.1": "SIL Open Font License 1.1"
+  },
+  "items": [
+    {
+      "g": "own",
+      "name": "Octoglow",
+      "by": [
+        "Copyright (c) 2026 Adrian Tomoiaga"
+      ],
+      "lic": [
+        "MIT"
+      ],
+      "url": "https://github.com/Adium1000/Octoglow"
+    },
+    {
+      "g": "lib",
+      "name": "Arduino core for ESP32",
+      "ver": "3.3.4",
+      "by": [
+        "Copyright (c) 2005-2013 Arduino Team",
+        "Copyright (c) 2014 Ivan Grokhotkov",
+        "Copyright (c) 2015 Markus Sattler",
+        "Copyright (c) 2013 Tony DiCola",
+        "Copyright 2015-2024 Espressif Systems (Shanghai) CO LTD"
+      ],
+      "lic": [
+        "LGPL-2.1",
+        "Apache-2.0",
+        "MIT"
+      ],
+      "url": "https://github.com/espressif/arduino-esp32"
+    },
+    {
+      "g": "lib",
+      "name": "MD_MAX72XX",
+      "ver": "3.5.1",
+      "by": [
+        "Copyright (C) 2012-23 Marco Colli"
+      ],
+      "lic": [
+        "LGPL-2.1"
+      ],
+      "url": "https://github.com/MajicDesigns/MD_MAX72XX"
+    },
+    {
+      "g": "lib",
+      "name": "ArduinoJson",
+      "ver": "7.4.3",
+      "by": [
+        "Copyright © 2014-2026, Benoit BLANCHON"
+      ],
+      "lic": [
+        "MIT"
+      ],
+      "url": "https://github.com/bblanchon/ArduinoJson"
+    },
+    {
+      "g": "lib",
+      "name": "Adafruit BMP280 Library",
+      "ver": "3.0.0",
+      "by": [
+        "Copyright (c) Adafruit Industries"
+      ],
+      "lic": [
+        "MIT"
+      ],
+      "url": "https://github.com/adafruit/Adafruit_BMP280_Library"
+    },
+    {
+      "g": "lib",
+      "name": "Adafruit BusIO",
+      "ver": "1.17.4",
+      "by": [
+        "Copyright (c) 2017 Adafruit Industries"
+      ],
+      "lic": [
+        "MIT"
+      ],
+      "url": "https://github.com/adafruit/Adafruit_BusIO"
+    },
+    {
+      "g": "lib",
+      "name": "Adafruit Unified Sensor",
+      "ver": "1.1.15",
+      "by": [
+        "Copyright (C) 2008 The Android Open Source Project"
+      ],
+      "lic": [
+        "Apache-2.0"
+      ],
+      "url": "https://github.com/adafruit/Adafruit_Sensor"
+    },
+    {
+      "g": "sys",
+      "name": "ESP-IDF",
+      "ver": "5.5.1",
+      "by": [
+        "Copyright 2015-2025 Espressif Systems (Shanghai) CO LTD"
+      ],
+      "lic": [
+        "Apache-2.0"
+      ],
+      "url": "https://github.com/espressif/esp-idf"
+    },
+    {
+      "g": "sys",
+      "name": "FreeRTOS Kernel",
+      "ver": "10.5.1",
+      "by": [
+        "Copyright (C) 2021 Amazon.com, Inc. or its affiliates"
+      ],
+      "lic": [
+        "MIT"
+      ],
+      "url": "https://github.com/FreeRTOS/FreeRTOS-Kernel"
+    },
+    {
+      "g": "sys",
+      "name": "lwIP",
+      "ver": "2.2.0",
+      "by": [
+        "Copyright (c) 2001-2004 Swedish Institute of Computer Science"
+      ],
+      "lic": [
+        "BSD-3-Clause"
+      ],
+      "url": "https://savannah.nongnu.org/projects/lwip/"
+    },
+    {
+      "g": "sys",
+      "name": "Mbed TLS",
+      "ver": "3.6.4",
+      "by": [
+        "Copyright The Mbed TLS Contributors"
+      ],
+      "lic": [
+        "Apache-2.0"
+      ],
+      "url": "https://github.com/Mbed-TLS/mbedtls"
+    },
+    {
+      "g": "sys",
+      "name": "mDNS",
+      "ver": "1.9.0",
+      "by": [
+        "Copyright Espressif Systems (Shanghai) CO LTD"
+      ],
+      "lic": [
+        "Apache-2.0"
+      ],
+      "url": "https://github.com/espressif/esp-protocols"
+    },
+    {
+      "g": "ui",
+      "name": "Google Sans",
+      "by": [
+        "Copyright 2025 The Google Sans Project Authors (https://github.com/googlefonts/googlesans)"
+      ],
+      "lic": [
+        "OFL-1.1"
+      ],
+      "url": "https://github.com/googlefonts/googlesans"
+    },
+    {
+      "g": "ui",
+      "name": "Roboto",
+      "by": [
+        "Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)"
+      ],
+      "lic": [
+        "OFL-1.1"
+      ],
+      "url": "https://github.com/googlefonts/roboto-classic"
+    },
+    {
+      "g": "ui",
+      "name": "Material Symbols",
+      "by": [
+        "Copyright Google LLC"
+      ],
+      "lic": [
+        "Apache-2.0"
+      ],
+      "url": "https://github.com/google/material-design-icons"
+    }
+  ]
+}

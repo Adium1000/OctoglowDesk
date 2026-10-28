@@ -1,0 +1,185 @@
+# Devlog 1: Fixed the readme
+
+Previously, my readme was written by ai, so it wasn't really that great. It contained a lot of false information about my project, so I decided to remake it, keeping only a few accurate parts from the previous version.
+This update adds a lot of images and examples, as well as a banner, making the readme much more pleasant to look at. It took me quite a while to finish, but I'm really satisfied with the final result.
+
+![roadmapthumb](roadmaps/roadmap1.png)
+
+# Devlog 2: UI inconsistency error fixes + WiFi sync bug fix
+
+1. UI inconsistency error fixes
+- I tried to identify and fix all of them since in future versions we will be able to set the accent color for the interface
+Below are all the fixes for the UI inconsistencies:
+ - In Tile Manager: In the "Display Settings" category (My Project is still in Romanian and English, I will do a fix for that later) Tile Transition and Scroll Type used a different category opening arrow than the one on Disable Tile Icons, now they all look the same
+ - In the "Switch to AP Mode" popup, the icon on the left and the confirmation button were red, which made the UI a bit inconsistent, now they follow the current accent color
+ - In the About category, both Info and Software showed the version info, now it's only in Software, and the order was changed to Info, User, Software
+ - In Display, in the "Brightness" category, the brightness icon had a smaller blade than the rest
+
+2. Octoglow WiFi information sync errors
+
+In the past, the firmware had a problem where if /state failed even once (a network blip on the ESP32), the page would permanently fall back to a reduced hardcoded list (without Pressure/Screensaver/Currency) and would stop updating IP/WiFi/version at all, which is why it only worked after a restart, since that redid the fetch
+Fix applied: now, if /state fails, the page automatically retries up to 4 times (with increasing delay: 0.5s, 1s, 1.5s, 2s) before falling back to the incomplete fallback. This basically removes the need for a manual restart in unfavorable cases
+
+![roadmapthumb](roadmaps/roadmap2.png)
+
+# Devlog 3: Text Engine Fixes
+
+1. Tile Font Inconsistency
+Before this fix, the timer, stopwatch, memento, and currency tiles used a different numeric font than the rest of the tiles, something I hadn't noticed until now. As of this update, all tiles now display using the same font.
+
+Before
+
+![bef](<roadmaps/Fix (1).jpeg>)
+
+After
+
+![bef](<roadmaps/Fix (2).jpeg>)
+
+2. Toasts
+In previous versions, when logging into the interface, we had no dedicated way to communicate short lived pieces of information, so these messages were scattered around and didn't look good. Starting with this update, the web interface now has the ability to display toasts (a feature I mainly integrated to warn the user that they cannot have 0 active circuit tiles, and that at least one tile of that kind needs to be turned on for the firmware to work correctly. However, I saw an opportunity in this, so I integrated it in other places as well).
+
+Places where we now have toasts:
+Failed Login
+Successful Wifi Connection
+Circuit Tile Exception
+AP Mode Switch
+
+![roadmapthumb](roadmaps/roadmap3.png)
+
+# 4. Fixed tile engine + Easy Discover Utility
+### Animation transition fix
+
+Fixed the animation transition on single circuit tiles for a smoother and more consistent visual experience.
+
+### Show IP address through Touch actions
+
+You can now assign `Show IP Address` to `On Touch` or any other supported Touch event from the Touch Options menu.
+
+When triggered, Octoglow will display its current IP address directly on the device. This can be especially useful when using a hotspot for synchronization, or when you want to connect to Octoglow without having to dig through your router settings to find its address.
+
+It makes accessing the interface and setting up synchronization a little easier and more convenient.
+
+## README Updates
+
+### Photos of Octoglow in Action
+
+A new section has been added to the README: **Photos of Octoglow in Action**.
+
+This section is intended as a community gallery where you can share photos of your own Octoglow device. The goal is to build a diverse collection of setups that shows the different ways Octoglow can be used, customized, and built into your own projects.
+
+Whether you went for a clean setup, something completely custom, or found a use case we never thought of, feel free to share it.
+
+And yes, ideally with Octoglow actually being the star of the show. Although I have a feeling some of you might have other plans.
+
+# 5. UAC Redesign + NowPlaying Number Font Fix
+
+## Redesigned the old UAC
+Gave the old UAC (login/setup screen) a visual refresh to make it feel more modern and pleasant to use. The layout is now more minimal overall, with less clutter and less text on screen. One of the nicer additions is an automatic guest avatar that generates your initials from the username you type, instead of showing a generic placeholder icon the whole time. Spacing and alignment were also cleaned up so the screen looks tidier on both small and large displays.
+
+## Fixed NowPlaying numeric font
+Noticed that the NowPlaying tile was rendering its numbers with a different font than every other tile in the UI, which made it stand out in a bad way. Tracked it down and fixed it so NowPlaying now uses the same numeric font as the rest of the tiles, keeping everything visually consistent.
+
+# 6. Accent Color + 15 New Buzzer tones 
+
+# Accent Color
+
+Now you can change the accent color of the dashboard from the default pink up to any color, (except white and black because they are not colors and they will broke the dashboard) Also there are some prests that I find them looking cool and also an option to custum hex , and restore
+
+And added light mode, if you'd like to use your monitor as a flashlight
+
+# Buzzer Tones
+
+Added a few new buzzer tones, they are pretty basic
+Here Is the full list of buzzer tones 
+
+- Calm
+- Loud
+- Urgent
+- Soft
+- Double Beep
+- Triple Beep
+- Chime
+- Bell
+- Doorbell
+- Xylophone
+- Harp Glissando
+- Marimba
+- Crystal Sparkle
+- Gentle Wave
+- Lullaby
+- Ping Pong
+- SOS
+- Siren
+- Klaxon
+- Klaxon
+- Laser Zap
+- Robot Blips
+- Fanfare 
+- Power Down
+- Power Up
+- Heartbeat
+- Sci-Fi
+- Arcade
+- Zen Gong
+- Bubbles
+- Whistle
+- Bold Alert
+
+
+![dd](roadmaps/roadmap4.png)
+
+# 7. Released the Octoglow Website + Major Firmware Fixes
+
+## 1. Octoglow Website
+
+Released the new **Octoglow Website**! This page makes the Octoglow setup and introduction easier for new users, while also providing a way to try out the Octoglow dashboard.
+
+## 2. Firmware Updates
+
+* **Fixed Tile Font Issues:** Fixed numeric font issues affecting the following tiles:
+
+  * IP Address
+  * Notification
+
+* **Fixed Text Scrolling Freezes:** Fixed most of the freeze issues that occurred when a tile was scrolling text.
+
+* **"Looking for Something Else" Section:** Added a **"Looking for Something Else"** section to the Tile Manager and AP pages. This will help users find information related to these menus.
+
+* **No Re-Login Required:** Fixed the login cache issue. Now, even if you unplug your Octoglow, you can still access it without entering your password again, as long as you have previously logged in or revisited the page within the last 30 days.
+
+* **Connection Issue Popup:** If your ESP loses its internet connection, a popup will now be displayed in the web interface to notify you.
+
+* **Tile Manager Design Improvements:** Improved the design flow in the Tile Manager settings. All custom options for a tile are now displayed in a cleaner list format using radio buttons.
+
+* **Help Manager:** Some tiles now have a **(?)** icon. Pressing it will show information about how to properly configure and use that tile.
+
+* **Custom Date Formatting:** You can now customize the date format however you want using:
+  **W, Y, M, D, /, , and .**
+
+
+
+
+Connector App + App Patch
+
+1. Released Octoglow Connect -  A remade version of Octoglow Sender but in C# 
+
+- This app should be more stable, also this app provides more options like:
+  - System Default Language Detector
+  - System Default Theme Detector
+  - Euro Truck Simulator truck Handbrake Detector
+  - Now Playing Pause Detector
+  - Now Playing Video Player Detecor (Avalabile in the last Python Version of Sender if you compile it by yourself)
+  - Backdrop Material 
+
+2. /state bugs fix
+
+In the last patch of thre Octoglow Firmware, I tryed to patch the most reasons why the state command will fail to reach back the server, that may make the web experience smoother and more reliable 
+
+3. Released Demo on the site 
+
+Great news! If you want to test a Demo version of the web interface before flashing you can now try it
+
+4. Fixed Schematics
+
+Before the buzzer was connected on pin 7, now it is indeed conected in the pin 12
+Maked the picture text more readable

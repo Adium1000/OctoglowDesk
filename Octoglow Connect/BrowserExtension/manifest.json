@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Octoglow Browser Downloads",
+  "version": "1.0.0",
+  "description": "Sends only aggregate Chromium download progress to Octoglow Connect on this computer.",
+  "permissions": ["downloads", "alarms", "storage"],
+  "host_permissions": ["http://127.0.0.1:38742/*"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

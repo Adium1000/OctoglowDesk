@@ -1,0 +1,48 @@
+
+# ==========================================
+# OCTOGLOWDESK - GIT IGNORE
+# ==========================================
+
+# 1. Backups
+# Ignore backup folders at any depth
+**/*[Bb][Aa][Cc][Kk][Uu][Pp]*/
+
+# 2. .NET / Visual Studio
+**/bin/
+**/obj/
+**/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# 3. Build & Debug Files
+*.pdb
+*.ilk
+*.tlog
+*.cache
+*.tmp
+*.log
+
+# 4. Python
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# 5. Arduino / ESP32
+**/build/
+*.elf
+*.map
+*.o
+
+# 6. Operating System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 7. Editor Temporary Files
+*.swp
+*.swo
+*~
